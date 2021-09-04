@@ -1,0 +1,22 @@
+version: '2.2'
+
+networks:
+  mobile-manipulator-network:
+    external: true
+
+services:
+  ur-ros-driver:
+    image: ur-ros-driver:latest
+    networks: 
+      mobile-manipulator-network: 
+        ipv4_address: 192.168.56.3
+    environment:
+      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+      - "ROS_HOSTNAME=192.168.56.3"
+    command: >      
+      bash -c "source /opt/ros/melodic/setup.bash &&
+      source ~/catkin_ws/devel/setup.bash &&
+      roslaunch ur_robot_driver ur10_bringup.launch robot_ip:=192.168.56.4"
+    cpus: 1.0
+    privileged: true
+    restart: always

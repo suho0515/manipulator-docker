@@ -1,0 +1,61 @@
+version: '2.2'
+
+networks:
+  mobile-manipulator-network:
+    external: true
+
+services:
+  # for windows
+#  viz:
+#    image: ros-visualizer
+#    container_name: ros-visualizer
+#    networks:
+#      mobile-manipulator-network: 
+#        ipv4_address: 192.168.56.5
+#    environment:
+#      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+#      - "ROS_HOSTNAME=192.168.56.5"
+#      - "DISPLAY=192.168.1.189:0.0"
+#      - "LIBGL_ALWAYS_INDIRECT=0"
+#    privileged: true
+#    command: rqt
+
+  # for ubuntu whith nvidia
+#  viz:
+#    image: ros-visualizer
+#    container_name: ros_visualizer
+#    networks:
+#      mobile-manipulator-network: 
+#        ipv4_address: 192.168.56.5
+#    environment:
+#      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+#      - "ROS_HOSTNAME=192.168.56.5"
+#      - "DISPLAY"
+#      - "QT_X11_NO_MITSHM=1" #fix some QT bugs
+#    #share your user to the container in order to access your x11
+#    user: 1000:1000 #adapt as needed!
+#    volumes: 
+#      #share your x11 socket and permissions to the container
+#      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#      - /etc/group:/etc/group:ro
+#      - /etc/passwd:/etc/passwd:ro
+#      - /etc/shadow:/etc/shadow:ro
+#      - /etc/sudoers:/etc/sudoers:ro
+#      - /etc/sudoers.d:/etc/sudoers.d:ro
+#      - /home/<your_user>:/home/<your_user>:rw #share your home with write permissions
+#    command: rqt
+
+  viz:
+    image: ros-visualizer
+    container_name: ros_visualizer
+    networks:
+      mobile-manipulator-network: 
+        ipv4_address: 192.168.56.5
+    environment:
+      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+      - "ROS_HOSTNAME=192.168.56.5"
+      - "DISPLAY=unix$DISPLAY"
+    volumes: 
+      #share your x11 socket and permissions to the container
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    command: rqt

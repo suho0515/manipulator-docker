@@ -1,0 +1,33 @@
+version: '2.2'
+
+networks:
+  mobile-manipulator-network:
+    external: true
+
+volumes:
+    dockursim:
+      driver: local
+
+services:
+  urdocksim:
+    image: suho0515/dockursim-externalcontrol:latest
+    container_name: dockursim-externalcontrol
+    environment: 
+      - "ROBOT_MODEL=UR10"
+    ports:
+      - "8080:8080"
+      - "29999:29999"
+      - "30001-30004:30001-30004"
+    #volumes:
+      # for windows10 environment
+      #- C:\docker\ursim\programs:/ursim/programs
+      # for linux environment
+      #- /home/suho/docker/ursim/programs:/ursim/programs
+      #- dockursim:/ursim
+    networks: 
+      mobile-manipulator-network: 
+        ipv4_address: 192.168.56.4
+    cpus: 1.0
+    privileged: true
+    restart: always
+

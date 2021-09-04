@@ -1,0 +1,18 @@
+version: '2.2'
+
+networks:
+  mobile-manipulator-network:
+    external: true
+
+services:
+  ros-master:
+    image: ros:melodic
+    networks: 
+      mobile-manipulator-network: 
+        ipv4_address: 192.168.56.2
+    environment:
+      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+      - "ROS_HOSTNAME=192.168.56.2"
+    command: stdbuf -o L roscore
+    restart: always
+

@@ -1,0 +1,99 @@
+version: '2.2'
+
+networks:
+  macvlan-bridge:
+    external: true
+
+volumes:
+    dockursim:
+      driver: local
+
+services:
+  ros-master:
+    image: ros:melodic
+    container_name: ros-master
+    networks: 
+      macvlan-bridge: 
+        ipv4_address: 192.168.50.2
+    environment:
+      - "ROS_MASTER_URI=http://192.168.50.2:11311"
+      - "ROS_HOSTNAME=192.168.50.2"
+    command: stdbuf -o L roscore
+    restart: always
+
+  ur-ros-driver:
+    image: suho0515/ur-ros-driver:latest
+    container_name: ur-ros-driver
+    depends_on:
+      - ros-master
+    networks: 
+      macvlan-bridge: 
+        ipv4_address: 192.168.50.3
+    environment:
+      - "ROS_MASTER_URI=http://192.168.50.2:11311"
+      - "ROS_HOSTNAME=192.168.50.3"
+      - "DISPLAY=unix$DISPLAY"
+    volumes: 
+      #share your x11 socket and permissions to the container
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    ports:
+      - "50003:50003"
+      - "50002:50002"
+      - "50001:50001"
+      - "8080:8080"
+      - "29999:29999"
+      - "30001-30004:30001-30004"
+    command: >      
+      bash -c "source /opt/ros/melodic/setup.bash &&
+      source ~/catkin_ws/devel/setup.bash &&
+      roslaunch ur_robot_driver ur3e_bringup.launch robot_ip:=192.168.50.233"
+    cpus: 1.0
+    privileged: true
+    restart: always
+
+# for linux
+  rqt-joint-trajectory-controller:
+    image: suho0515/rqt-joint-trajectory-controller:latest
+    container_name: rqt-joint-trajectory-controller
+    depends_on:
+      - ros-master
+      - ur-ros-driver
+    networks:
+      macvlan-bridge: 
+        ipv4_address: 192.168.50.5
+    environment:
+      - "ROS_MASTER_URI=http://192.168.50.2:11311"
+      - "ROS_HOSTNAME=192.168.50.5"
+      - "DISPLAY=unix$DISPLAY"
+    volumes: 
+      #share your x11 socket and permissions to the container
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    command: >      
+      bash -c "source /opt/ros/melodic/setup.bash &&
+      source ~/catkin_ws/devel/setup.bash &&
+      rqt"
+
+# for windows
+#  viz:
+#    image: ros-visualizer
+#    container_name: ros-visualizer
+#    networks:
+#      mobile-manipulator-network: 
+#        ipv4_address: 192.168.56.5
+#    environment:
+#      - "ROS_MASTER_URI=http://192.168.56.2:11311"
+#      - "ROS_HOSTNAME=192.168.56.5"
+#      - "DISPLAY"
+#      - "QT_X11_NO_MITSHM=1" #fix some QT bugs
+#    #share your user to the container in order to access your x11
+#    user: 1000:1000 #adapt as needed!
+#    volumes: 
+#      #share your x11 socket and permissions to the container
+#      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+#      - /etc/group:/etc/group:ro
+#      - /etc/passwd:/etc/passwd:ro
+#      - /etc/shadow:/etc/shadow:ro
+#      - /etc/sudoers:/etc/sudoers:ro
+#      - /etc/sudoers.d:/etc/sudoers.d:ro
+#      - /home/<your_user>:/home/<your_user>:rw #share your home with write permissions
+#    command: rqt
